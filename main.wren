@@ -72,7 +72,7 @@ class Main {
   construct new() {}
   
   init() {
-    _dialog_text = DialogText.new("Ceci est un dialogue de test", Color.white)
+    _dialog_text = DialogText.new("This is a test dialogue", Color.white)
     _dialog = DialogBox.new(
       Vector.new(50, 50),
       Vector.new(200, 50),
