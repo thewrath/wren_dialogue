@@ -29,19 +29,20 @@ class Clock {
 
 class DialogText {
 
-  construct new(text, color, line_padding) {
+  construct new(author, text) {
+    _author = author
     _text = text
     _last_letter = 0
     _buffer = []
     _buffer.add(_text[_last_letter]) 
-    _color = color
+    _color = Color.white
     _line_height = Canvas.getPrintArea(_buffer[0]).y
-    _line_padding = line_padding
+    _line_padding = Vector.new(5, 5)
   }
 
   nextLetter() {
     _last_letter = _last_letter + 1
-    if (_last_letter < _text.count) {
+    if (!isDone) {
       var current = _buffer.count - 1
       _buffer[current] = _buffer[current] + _text[_last_letter]
     }
@@ -54,9 +55,11 @@ class DialogText {
     }   
   }
 
+  isDone { !(_last_letter < _text.count) }
+
   checkLineBreak(dialog_area) {
     // check line break only between words (and if end of text isn't reach)
-    if (_last_letter < _text.count && _text[_last_letter] == " ") {
+    if (!isDone && _text[_last_letter] == " ") {
       var next_word = ""
       var word_to_check = _text[(_last_letter + 1)..._text.count]
       for (l in word_to_check) {
@@ -87,30 +90,43 @@ class DialogText {
 
 class DialogBox {
   
-  construct new(position, size, text, speed) {
+  construct new(position, size, textes, speed) {
     _position = position
     _size = size
     _color = Color.white
-    _text = text
+    _textes = textes
+    _currentTextId = 0
 
     // Clock to update text
     _clock = Clock.new()
     _clock.each(speed, Fn.new {
-      _text.nextLetter()
-      _text.checkLineBreak(_size)
+      currentText.nextLetter()
+      currentText.checkLineBreak(_size)
     })
+  }
+
+  currentText { _textes[_currentTextId] }
+
+  nextText() {
+    if (_currentTextId < (_textes.count - 1)) {
+      _currentTextId = _currentTextId + 1
+    }
   }
 
   update() {
     _clock.update()
 
     if (Keyboard.isKeyDown("Space")) {
-      _text.skip(_size)
+      if (!currentText.isDone) {
+        currentText.skip(_size)
+      } else {
+        nextText()
+      }
     }
   }
 
   draw(dt) {
-    _text.draw(dt, _position)
+    currentText.draw(dt, _position)
     Canvas.rect(
       _position.x,
       _position.y,
@@ -128,16 +144,14 @@ class Main {
   
   init() {
     
-    _dialog_text = DialogText.new(
-      "This is a really long text dialogue that is here to test line break in DialogBox.",
-      Color.white,
-      Vector.new(5, 5)
-    )
-    
     _dialog = DialogBox.new(
       Vector.new(50, 50),
       Vector.new(200, 100),
-      _dialog_text,
+      [
+        DialogText.new("Player", "This is a really long text dialogue that is here to test line break in DialogBox."),
+        DialogText.new("Pnj", "This is the next part ..."),
+        DialogText.new("Player", "and this is the final part."),
+      ],
       0.05 // Speed less is faster
     )
   
@@ -148,6 +162,7 @@ class Main {
   }
   
   draw(dt) {
+    Canvas.cls()
     _dialog.draw(dt)
   }
 }
