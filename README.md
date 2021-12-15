@@ -7,3 +7,5 @@ Todo :
 - [x] Multiple text in dialog (to form a dialog)
 - [x] Spacebar to display all text
 - [x] Auto resize in height
+- [ ] Display next at bottom of DialogBox
+- [ ] Display image in DialogBox 
