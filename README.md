@@ -6,4 +6,4 @@ Todo :
 - [x] Autowrap
 - [x] Multiple text in dialog (to form a dialog)
 - [x] Spacebar to display all text
-- [ ] Auto resize in height
+- [x] Auto resize in height

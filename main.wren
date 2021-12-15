@@ -40,6 +40,10 @@ class DialogText {
     _line_padding = Vector.new(5, 5)
   }
 
+  height { _line_height*(_buffer.count+1) + _line_padding.y*(_buffer.count+1) }
+
+  isDone { !(_last_letter < _text.count) }
+  
   nextLetter() {
     _last_letter = _last_letter + 1
     if (!isDone) {
@@ -54,8 +58,6 @@ class DialogText {
       checkLineBreak(dialog_area)
     }   
   }
-
-  isDone { !(_last_letter < _text.count) }
 
   checkLineBreak(dialog_area) {
     // check line break only between words (and if end of text isn't reach)
@@ -103,9 +105,13 @@ class DialogBox {
       currentText.nextLetter()
       currentText.checkLineBreak(_size)
     })
+
+    _skipKeyDown = false
   }
 
   currentText { _textes[_currentTextId] }
+
+  isDone { _currentTextId >= _textes.count - 1 && currentText.isDone }
 
   nextText() {
     if (_currentTextId < (_textes.count - 1)) {
@@ -116,12 +122,21 @@ class DialogBox {
   update() {
     _clock.update()
 
-    if (Keyboard.isKeyDown("Space")) {
+    if (Keyboard.isKeyDown("Space") && !_skipKeyDown) {
       if (!currentText.isDone) {
         currentText.skip(_size)
       } else {
         nextText()
       }
+
+      _skipKeyDown = true
+    } else if (!Keyboard.isKeyDown("Space") && _skipKeyDown) {
+      _skipKeyDown = false 
+    }
+
+    // Auto-resize dialog box
+    if (currentText.height > _size.y) {
+      _size.y = currentText.height
     }
   }
 
@@ -146,7 +161,7 @@ class Main {
     
     _dialog = DialogBox.new(
       Vector.new(50, 50),
-      Vector.new(200, 100),
+      Vector.new(200, 25),
       [
         DialogText.new("Player", "This is a really long text dialogue that is here to test line break in DialogBox."),
         DialogText.new("Pnj", "This is the next part ..."),
