@@ -2,6 +2,8 @@
 
 Little dialogue system to test [Wren](https://wren.io) programming language and [Dome](https://domeengine.com) graphic library.
 
+![Alt Text](https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif)
+
 Todo : 
 - [x] Autowrap
 - [x] Multiple text in dialog (to form a dialog)

@@ -163,6 +163,7 @@ class Main {
       Vector.new(50, 50),
       Vector.new(200, 25),
       [
+        DialogText.new("Player", "Hello."),
         DialogText.new("Player", "This is a really long text dialogue that is here to test line break in DialogBox."),
         DialogText.new("Pnj", "This is the next part ..."),
         DialogText.new("Player", "and this is the final part."),
