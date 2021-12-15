@@ -2,7 +2,7 @@
 
 Little dialogue system to test [Wren](https://wren.io) programming language and [Dome](https://domeengine.com) graphic library.
 
-![Alt Text](https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif)
+![Alt Text](https://raw.githubusercontent.com/thewrath/wren_dialogue/main/res/example.gif)
 
 Todo : 
 - [x] Autowrap
