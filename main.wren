@@ -1,4 +1,4 @@
-import "graphics" for Canvas, Color
+import "graphics" for Canvas, Color, ImageData
 import "math" for Vector
 import "input" for Keyboard
 
@@ -44,7 +44,7 @@ class DialogText {
 
   isDone { !(_last_letter < _text.count) }
   
-  nextLetter() {
+  nextStep() {
     _last_letter = _last_letter + 1
     if (!isDone) {
       var current = _buffer.count - 1
@@ -54,7 +54,7 @@ class DialogText {
 
   skip(dialog_area) {
     while(_last_letter != _text.count) {
-      nextLetter()
+      nextStep()
       checkLineBreak(dialog_area)
     }   
   }
@@ -90,6 +90,44 @@ class DialogText {
   }
 }
 
+class DialogImage {
+
+  construct new(author, image) {
+    _author = author
+    _image = image
+    _current_step = 1
+    _step = 100
+    _scale = 1/2
+    nextStep()
+  }
+
+  height { _image.height*_scale }
+
+  isDone { _current_step == _step }
+
+  nextStep() {
+    _current_step = _current_step + 1
+    _region = _image.transform({
+      "srcX": 0, "srcY": 0,
+      "scaleX": _scale, "scaleY": _scale,
+      "srcW": _image.width, "srcH": _image.height*(_current_step/_step),  
+    })
+  }
+
+  skip(dialog_area) {
+
+  }
+
+  checkLineBreak(dialog_area) {
+
+  }
+
+  draw(dt, position) {
+    _region.draw(position.x, position.y)
+  }
+
+}
+
 class DialogBox {
   
   construct new(position, size, textes, speed) {
@@ -102,7 +140,7 @@ class DialogBox {
     // Clock to update text
     _clock = Clock.new()
     _clock.each(speed, Fn.new {
-      currentText.nextLetter()
+      currentText.nextStep()
       currentText.checkLineBreak(_size)
     })
 
@@ -163,6 +201,7 @@ class Main {
       Vector.new(50, 50),
       Vector.new(200, 25),
       [
+        DialogImage.new("Player", ImageData.loadFromFile("res/globox.png")),
         DialogText.new("Player", "Hello."),
         DialogText.new("Player", "This is a really long text dialogue that is here to test line break in DialogBox."),
         DialogText.new("Pnj", "This is the next part ..."),
