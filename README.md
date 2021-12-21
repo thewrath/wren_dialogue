@@ -9,8 +9,8 @@ Todo :
 - [x] Multiple text in dialog (to form a dialog)
 - [x] Spacebar to display all text
 - [x] Auto resize in height
+- [x] Display image in DialogBox
 - [ ] Display next at bottom of DialogBox
-- [ ] Display image in DialogBox
 
 How to use :
 
