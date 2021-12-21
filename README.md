@@ -11,6 +11,7 @@ Todo :
 - [x] Auto resize in height
 - [x] Display image in DialogBox
 - [ ] Display next at bottom of DialogBox
+- [ ] User choice using button
 
 How to use :
 
