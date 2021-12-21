@@ -2,6 +2,7 @@ import "graphics" for Canvas, Color, ImageData
 import "math" for Vector
 import "input" for Keyboard
 
+// Utility class to process task each x second
 class Clock {
 
   construct new() {
@@ -25,9 +26,26 @@ class Clock {
       }
     }
   }
+
 }
 
-class DialogText {
+// Contract class for a dialog box component.
+class DialogComponent {
+  
+  height {}
+  
+  isDone {}
+
+  nextStep() {}
+
+  checkSizeConstraints(dialog_size) {}
+
+  draw(dt, position) {}
+
+}
+
+// Display text in DialogBox
+class DialogText is DialogComponent {
 
   construct new(author, text) {
     _author = author
@@ -52,15 +70,9 @@ class DialogText {
     }
   }
 
-  skip(dialog_area) {
-    while(_last_letter != _text.count) {
-      nextStep()
-      checkLineBreak(dialog_area)
-    }   
-  }
+  checkSizeConstraints(dialog_size) {
 
-  checkLineBreak(dialog_area) {
-    // check line break only between words (and if end of text isn't reach)
+    // Check line break only between words (and if end of text isn't reach)
     if (!isDone && _text[_last_letter] == " ") {
       var next_word = ""
       var word_to_check = _text[(_last_letter + 1)..._text.count]
@@ -72,7 +84,7 @@ class DialogText {
       // Get area needed to display the text
       var area = Canvas.getPrintArea(_buffer[_buffer.count - 1] + next_word)
 
-      if (area.x > (dialog_area.x - _line_padding.x)) {
+      if (area.x > (dialog_size.x - _line_padding.x)) {
         _buffer.add("")
       }
     }
@@ -88,38 +100,38 @@ class DialogText {
       )
     }
   }
+
 }
 
-class DialogImage {
+// Display image in DialogBox
+class DialogImage is DialogComponent {
 
   construct new(author, image) {
     _author = author
     _image = image
     _current_step = 1
-    _step = 100
-    _scale = 1/2
+    _step = 10
+    _scale = 1
     nextStep()
   }
 
-  height { _image.height*_scale }
+  height { (_image.height*_scale)*(_current_step/_step) }
 
-  isDone { _current_step == _step }
+  isDone { _current_step >= _step }
 
   nextStep() {
-    _current_step = _current_step + 1
-    _region = _image.transform({
-      "srcX": 0, "srcY": 0,
-      "scaleX": _scale, "scaleY": _scale,
-      "srcW": _image.width, "srcH": _image.height*(_current_step/_step),  
-    })
+    if (!isDone) {
+      _current_step = _current_step + 1
+      _region = _image.transform({
+        "srcX": 0, "srcY": 0,
+        "scaleX": _scale, "scaleY": _scale,
+        "srcW": _image.width, "srcH": _image.height*(_current_step/_step),  
+      })
+    }
   }
 
-  skip(dialog_area) {
-
-  }
-
-  checkLineBreak(dialog_area) {
-
+  checkSizeConstraints(dialog_size) {
+    _scale = 1/(_image.width / dialog_size.x)
   }
 
   draw(dt, position) {
@@ -130,30 +142,30 @@ class DialogImage {
 
 class DialogBox {
   
-  construct new(position, size, textes, speed) {
+  construct new(position, size, dialog_components, speed) {
     _position = position
     _size = size
     _color = Color.white
-    _textes = textes
-    _currentTextId = 0
+    _dialog_components = dialog_components
+    _current_dialog_component_id = 0
 
     // Clock to update text
     _clock = Clock.new()
     _clock.each(speed, Fn.new {
-      currentText.nextStep()
-      currentText.checkLineBreak(_size)
+      currentComponent.nextStep()
+      currentComponent.checkSizeConstraints(_size)
     })
 
     _skipKeyDown = false
   }
 
-  currentText { _textes[_currentTextId] }
+  currentComponent { _dialog_components[_current_dialog_component_id] }
 
-  isDone { _currentTextId >= _textes.count - 1 && currentText.isDone }
+  isDone { _current_dialog_component_id >= _dialog_components.count - 1 && currentComponent.isDone }
 
-  nextText() {
-    if (_currentTextId < (_textes.count - 1)) {
-      _currentTextId = _currentTextId + 1
+  nextComponent() {
+    if (_current_dialog_component_id < (_dialog_components.count - 1)) {
+      _current_dialog_component_id = _current_dialog_component_id + 1
     }
   }
 
@@ -161,10 +173,13 @@ class DialogBox {
     _clock.update()
 
     if (Keyboard.isKeyDown("Space") && !_skipKeyDown) {
-      if (!currentText.isDone) {
-        currentText.skip(_size)
+      if (!currentComponent.isDone) {
+        while(!currentComponent.isDone) {
+          currentComponent.nextStep()
+          currentComponent.checkSizeConstraints(_size)      
+        }
       } else {
-        nextText()
+        nextComponent()
       }
 
       _skipKeyDown = true
@@ -172,14 +187,14 @@ class DialogBox {
       _skipKeyDown = false 
     }
 
-    // Auto-resize dialog box
-    if (currentText.height > _size.y) {
-      _size.y = currentText.height
+    // Auto-resize DialogBox
+    if (currentComponent.height > _size.y) {
+      _size.y = currentComponent.height
     }
   }
 
   draw(dt) {
-    currentText.draw(dt, _position)
+    currentComponent.draw(dt, _position)
     Canvas.rect(
       _position.x,
       _position.y,
@@ -220,6 +235,7 @@ class Main {
     Canvas.cls()
     _dialog.draw(dt)
   }
+
 }
 
 var Game = Main.new()
