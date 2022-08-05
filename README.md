@@ -10,12 +10,12 @@ Todo :
 - [x] Spacebar to display all text
 - [x] Auto resize in height
 - [x] Display image in DialogBox
-- [ ] Display next at bottom of DialogBox
+- [x] Display next button at bottom of DialogBox
 - [ ] User choice using button
 
 How to use :
 
-DialogBox work insead of Dome Engine.  
+DialogBox work inside of Dome Engine.  
 
 
 ```wren

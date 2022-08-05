@@ -1,6 +1,6 @@
 import "graphics" for Canvas, Color, ImageData
 import "math" for Vector
-import "input" for Keyboard
+import "input" for Keyboard, Mouse
 
 // Utility class to process task each x second
 class Clock {
@@ -74,6 +74,8 @@ class DialogText is DialogComponent {
 
     // Check line break only between words (and if end of text isn't reach)
     if (!isDone && _text[_last_letter] == " ") {
+
+      // Find the next word
       var next_word = ""
       var word_to_check = _text[(_last_letter + 1)..._text.count]
       for (l in word_to_check) {
@@ -161,18 +163,20 @@ class DialogBox {
 
   currentComponent { _dialog_components[_current_dialog_component_id] }
 
-  isDone { _current_dialog_component_id >= _dialog_components.count - 1 && currentComponent.isDone }
+  isLastComponent { !(_current_dialog_component_id < (_dialog_components.count - 1)) }
 
   nextComponent() {
-    if (_current_dialog_component_id < (_dialog_components.count - 1)) {
+    if (!isLastComponent) {
       _current_dialog_component_id = _current_dialog_component_id + 1
     }
   }
 
+  isClicked { Mouse.isButtonPressed("left") || Keyboard.isKeyDown("space") }
+
   update() {
     _clock.update()
 
-    if (Keyboard.isKeyDown("Space") && !_skipKeyDown) {
+    if (isClicked && !_skipKeyDown) {
       if (!currentComponent.isDone) {
         while(!currentComponent.isDone) {
           currentComponent.nextStep()
@@ -183,7 +187,7 @@ class DialogBox {
       }
 
       _skipKeyDown = true
-    } else if (!Keyboard.isKeyDown("Space") && _skipKeyDown) {
+    } else if (!isClicked && _skipKeyDown) {
       _skipKeyDown = false 
     }
 
@@ -201,7 +205,21 @@ class DialogBox {
       _size.x,
       _size.y,
       _color
-    )    
+    )
+
+    // Draw arrow to go to next component
+    if (currentComponent.isDone && !isLastComponent) {
+      var arrow_position = Vector.new(_position.x + _size.x - 15, _position.y +  _size.y - 15)
+      Canvas.triangle(
+        arrow_position.x,
+        arrow_position.y,
+        arrow_position.x,
+        arrow_position.y + 10,
+        arrow_position.x + 10,
+        arrow_position.y +5, 
+        _color
+      )
+    }   
   }
 
 }
@@ -216,7 +234,6 @@ class Main {
       Vector.new(50, 50),
       Vector.new(200, 25),
       [
-        DialogImage.new("Player", ImageData.loadFromFile("res/globox.png")),
         DialogText.new("Player", "Hello."),
         DialogText.new("Player", "This is a really long text dialogue that is here to test line break in DialogBox."),
         DialogText.new("Pnj", "This is the next part ..."),
